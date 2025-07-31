@@ -1,4 +1,4 @@
-            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     
     <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
     
     <!-- Fontes -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -218,7 +218,7 @@
         }
         
         /* Toast de instalação */
-        .install-toast {
+        #installToast {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -233,6 +233,12 @@
             animation: fadeIn 0.3s;
         }
         
+        #installToast .close-toast {
+            float: right;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -241,9 +247,11 @@
         #installButton {
             display: none;
             background-color: #4CAF50;
-            margin-left: 10px;
             color: white;
             border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
         }
         
         @media (max-width: 768px) {
@@ -256,7 +264,7 @@
                 font-size: 14px;
             }
             
-            .install-toast {
+            #installToast {
                 left: 20px;
                 right: 20px;
                 bottom: 70px;
@@ -279,8 +287,9 @@
         </div>
     </header>
     
-    <div id="installToast" class="install-toast">
+    <div id="installToast">
         Instalar Finanças no seu dispositivo
+        <span class="close-toast">✕</span>
     </div>
     
     <input type="file" id="restoreFile" accept=".json">
@@ -415,19 +424,28 @@
         
         function setupInstallPrompt() {
             window.addEventListener('beforeinstallprompt', (e) => {
+                // Previne o prompt automático
                 e.preventDefault();
+                // Armazena o evento para usar depois
                 deferredPrompt = e;
-                
-                // Mostra o toast de instalação
-                installToast.style.display = 'block';
+                // Mostra o botão de instalação
                 installButton.style.display = 'block';
+                // Mostra o toast
+                installToast.style.display = 'block';
                 
-                // Esconde após 15 segundos
+                // Esconde o toast após 15 segundos
                 setTimeout(() => {
                     installToast.style.display = 'none';
                 }, 15000);
             });
             
+            // Fecha o toast quando clicar no X
+            installToast.querySelector('.close-toast').addEventListener('click', (e) => {
+                e.stopPropagation();
+                installToast.style.display = 'none';
+            });
+            
+            // Instala quando clicar no toast
             installToast.addEventListener('click', async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
@@ -440,11 +458,13 @@
                 }
             });
             
+            // Instala quando clicar no botão
             installButton.addEventListener('click', async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
                     if (outcome === 'accepted') {
+                        console.log('Usuário aceitou a instalação');
                         installButton.style.display = 'none';
                     }
                     deferredPrompt = null;
