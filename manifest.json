@@ -1,6 +1,7 @@
 {
   "name": "Finanças Pessoais",
   "short_name": "Finanças",
+  "description": "Aplicativo para gerenciamento de finanças pessoais",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
